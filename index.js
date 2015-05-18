@@ -7,7 +7,7 @@ app.use(cookieParser());
 var sessions = {};
 var guid = 0;
 
-app.get("/", function(req, res) {
+var checkGuid = function(req, res, next) {
     var userGuid = req.cookies.guid;
     console.log(req.cookies.guid);
     if (!userGuid) {
@@ -18,8 +18,17 @@ app.get("/", function(req, res) {
         };
         res.cookie("guid", userGuid);
     }
-    sessions[userGuid].count += 1;
-    res.send("Hello World " + sessions[userGuid].count);
+
+    req.session = sessions[userGuid];
+    next();
+};
+
+app.use(checkGuid);
+
+app.get("/", function(req, res) {
+    req.session.count += 1;
+    var count = req.session.count;
+    res.send("Hello World " + count);
 });
 
 app.listen(3000, function() {
